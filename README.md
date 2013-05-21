@@ -1,4 +1,4 @@
 ws-bitcoin
 ==========
 
-A websocket server for the bitcoin daemon.
+A bitcoin websocket server
