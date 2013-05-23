@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ws-bitcoin Example Client</title>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+    <script type="text/javascript" src="http://localhost:18337/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="client.js"></script>
+
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="client.css"/>
+</head>
+<body>
+
+<ul id="actions">
+    <li><a href="#listtransactions">listtransactions</a></li>
+    <li><a href="#listtransactionsByAccount">listtransactions (by Account)</a></li>
+    <li><a href="#gettransaction">gettransaction</a></li>
+    <li><a href="#getrawtransaction">getrawtransaction</a></li>
+    <li><a href="#"></a></li>
+    <li><a href="#"></a></li>
+    <li><a href="#"></a></li>
+    <li><a href="#"></a></li>
+    <li><hr /></li>
+    <li><a href="#getinfo">getinfo</a></li>
+    <li><a href="#listaccounts">listaccounts</a></li>
+    <li><a href="#getblockcount">getblockcount</a></li>
+    <li><a href="#getconnectioncount">getconnectioncount</a></li>
+    <li><a href="#getdifficulty">getdifficulty</a></li>
+    <li><a href="#getgenerate">getgenerate</a></li>
+    <li><a href="#gethashespersec">gethashespersec</a></li>
+    <li><a href="#getmininginfo">getmininginfo</a></li>
+    <li><a href="#getpeerinfo">getpeerinfo</a></li>
+    <li><a href="#getrawmempool">getrawmempool</a></li>
+    <li><hr /></li>
+    <li><a href="#stop">stop</a></li>
+    <li><a href="#walletlock">walletlock</a></li>
+    <li><hr /></li>
+    <li><a href="#clear">clear</a></li>
+</ul>
+
+    <textarea id="console" readonly>
+ws-bitcoin Example client
+=======
+</textarea>
+
+    <div id="choose-account" title="Choose account">
+        <p>Please choose your account for this action</p>
+        <ul>
+
+        </ul>
+    </div>
+
+    <div id="choose-transaction" title="Choose transaction">
+        <p>Please choose your Transaction for this action</p>
+        <ul>
+
+        </ul>
+    </div>
+</body>
+</html>

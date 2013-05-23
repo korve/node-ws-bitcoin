@@ -1,0 +1,62 @@
+body, html {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    font-family: monospace;
+    overflow: hidden;
+    background: #000000;
+}
+
+#console {
+    background: #000000;
+    color: #ffffff;
+    font-family: monospace;
+    width: 85%;
+    padding: 10px 0 0 0;
+    margin: auto;
+    min-height: 100%;
+    height:auto !important;
+    height:100%;
+    overflow-x: hidden !important;
+    border: 0;
+    float: left;
+    outline: none;
+}
+
+#actions {
+    width: 15%;
+    float: left;
+    color: #ffffff;
+    margin: 10px 0 0 0;
+    padding: 0;
+}
+
+#actions li {
+    list-style: none;
+    margin-bottom: 3px;
+    padding: 0 20px;
+}
+
+#actions li a{
+    display: block;
+    list-style: none;
+    border-radius: 5px;
+    background: #333;
+    padding: 5px 10px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+#actions li a:after{
+    content: "()"
+}
+
+#actions li a:hover{
+    background: #666;
+}
+
+#actions li hr{
+    outline: 0;
+    border: 0;
+    border-bottom: 1px solid #666666;
+}
