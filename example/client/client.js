@@ -99,9 +99,14 @@ $(function(){
     /**
      * Socket example implementation
      */
+    if(typeof io == "undefined")
+    {
+        writeLog("Socket.io Service not found. Please start the ws-bitcoin service first and refresh this page.", "error");
+        return;
+    }
+
     var serviceAddress = "http://localhost:18337";
     var socket = io.connect(serviceAddress);
-    var requestId = 0;
     /**
      * A list containing accounts from the last listaccounts request
      * @type {Array}
