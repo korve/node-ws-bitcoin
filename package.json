@@ -1,0 +1,38 @@
+{
+    "name": "ws-bitcoin",
+    "description": "Bitcoin Websocket Service",
+    "version": "0.0.1",
+    "main": "index.js",
+    "keywords": [
+        "bitcoin",
+        "websocket",
+        "webservice"
+    ],
+    "author": {
+    "name": "André Eckardt",
+        "email": "aeckardt@outlook.com",
+        "url": "www.mindpress.de"
+    },
+    "contributors": [
+    ],
+    "dependencies": {
+        "bitcoin": "1.7.x",
+        "socket.io": "0.9.x"
+    },
+    "devDependencies": {
+    },
+    "optionalDependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/korve/ws-bitcoin.git"
+    },
+    "engines": {
+        "node": ">= 0.10.0"
+    },
+    "scripts": {
+    },
+    "readme": "",
+    "readmeFilename": "README.md",
+    "_id": "ws-bitcoin@0.0.1",
+    "_from": "ws-bitcoin@"
+}
