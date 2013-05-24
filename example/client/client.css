@@ -51,6 +51,10 @@ body, html {
     content: "()"
 }
 
+#actions li a.meta-action:after{
+    content: ""
+}
+
 #actions li a:hover{
     background: #666;
 }

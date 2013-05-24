@@ -14,6 +14,7 @@ $(function(){
             level = "DEBUG";
 
         domConsole.val(domConsole.val() + level.toUpperCase() + ": " + msg + "\r\n");
+        domConsole.get(0).scrollTop = domConsole.get(0).scrollHeight;
     }
 
     function clearLog()
@@ -218,6 +219,13 @@ $(function(){
 
                 }, 100);
 
+            });
+
+        },
+        subscribenewtx: function(){
+
+            showSelectAccountDialog(function(selectedAccount){
+                callWsBitcoinService("subscribenewtx", [selectedAccount]);
             });
 
         }

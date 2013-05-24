@@ -12,3 +12,7 @@ var service = new wsBitcoin.WsBitcoinService({
 });
 
 service.start();
+
+/**
+ * Webservice is now reachable at http://localhost:18337/
+ */

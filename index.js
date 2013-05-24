@@ -9,6 +9,16 @@ var fs      = require("fs"),
     bitcoin = require("bitcoin");
 
 /**
+ * Get available bitcoin commands
+ * @type {Array}
+ */
+var bitcoinCommands = [];
+for(var command in require("bitcoin/lib/commands"))
+{
+    bitcoinCommands.push(command.toLocaleLowerCase());
+}
+
+/**
  * WsBitcoinService constructor
  *
  * @param {Object} options
@@ -57,6 +67,17 @@ function WsBitcoinService(options){
             this.options[i] = options[i];
         }
     }
+
+    /**
+     * Holds all additional action methods
+     * @type {Array}
+     */
+    this.actions = {
+        "listavailableactions": this.listAvailableActions,
+        "subscribenewtx": this.subscribeToNewTransaction
+    };
+
+    this.newTxSubscriptions = [];
 };
 
 WsBitcoinService.prototype.start = function(){
@@ -103,6 +124,8 @@ WsBitcoinService.prototype.onConnection = function(socket) {
 
     var self = this;
 
+    socket.on("disconnect", this.onDisconnect.bind(this));
+
     socket.on('apiCall', function (data) {
         var action = data.action;
         var args = data.args;
@@ -130,23 +153,90 @@ WsBitcoinService.prototype.onConnection = function(socket) {
             {
                 socket.emit("apiResponse", {
                     "action":   action,
-                    "callArgs":     args,
+                    "callArgs": args,
                     "result":   data
                 });
             }
 
         });
 
-        console.log("debug: calling bitcoin api: " + args[0]);
-        try
+        /**
+         * First check if a own action exist. If not, call
+         * the bitcoin client.
+         */
+        if(typeof self.actions[action] == "function")
         {
-            self.bitcoinClient.cmd.apply(self.bitcoinClient, args);
+            console.log("debug: calling internal function: " + args[0]);
+            self.actions[action].bind(self)(socket, args);
         }
-        catch(err)
+        else
         {
-            throw err;
+            if(bitcoinCommands.indexOf(action) >= 0)
+            {
+                console.log("debug: calling bitcoin api: " + args[0]);
+                self.bitcoinClient.cmd.apply(self.bitcoinClient, args);
+            }
+            else
+            {
+                throw new Error("Action " + action + " not supported.");
+            }
         }
     });
+};
+
+WsBitcoinService.prototype.onDisconnect = function(reason){
+
+};
+
+/**
+ * Lists all available web service actions
+ * @param {Socket} Socket.io socket
+ * @param {Object} args The args that this action has been called with
+ */
+WsBitcoinService.prototype.listAvailableActions = function(socket, args){
+
+    var action = args[0];
+
+    var actions = [];
+
+    /**
+     * push addditional actions to array
+     */
+    for(var action in this.actions)
+    {
+        actions.push(action);
+    }
+
+    actions = actions.concat(bitcoinCommands);
+
+    socket.emit("apiResponse", {
+        "action":   action,
+        "callArgs": args,
+        "result":   actions
+    });
+
+};
+
+/**
+ * Clients can subscribe to receive notifications if new transactions are inbound
+ * to a specific account.
+ * @param {Socket} socket
+ * @param {Object} args  An array containing arguments for this action. First element is always the action name, following
+ *              arguments are arguments for this action and the last argument is always the callback function when
+ *              this action is finished.
+ *              e.g.: <actionName>,[...],<callback>
+ */
+WsBitcoinService.prototype.subscribeToNewTransaction = function(socket, args){
+
+    //var action = args[0];
+    var account = args[1]
+
+    if(typeof account != "string")
+    {
+        throw new Error("Invalid argument count");
+    }
+
+    socket.join("newTransactionSubscribers");
 };
 
 module.exports.WsBitcoinService = WsBitcoinService;
