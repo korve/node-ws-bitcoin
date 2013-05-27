@@ -54,7 +54,14 @@ function WsBitcoinService(options){
          * Testnet Settings
          */
         testnet:     false,
-        testnetPort: 18332
+        testnetPort: 18332,
+
+        /**
+         * The interval in which the bitcoin api will be checked
+         * for new transactions
+         */
+        checkInterval: 5000,
+        bitcoinTransactionConfirmationThreshold: 6
     };
 
     if(typeof options == "undefined")
@@ -77,7 +84,7 @@ function WsBitcoinService(options){
         "subscribenewtx": this.subscribeToNewTransaction
     };
 
-    this.newTxSubscriptions = [];
+    this._startAccountWatcher();
 };
 
 WsBitcoinService.prototype.start = function(){
@@ -114,6 +121,13 @@ WsBitcoinService.prototype.start = function(){
     }
 
     this.bitcoinClient = new bitcoin.Client(bitcoinClientConfig);
+
+    /**
+     * Contains all transaction ids that have been confirmed
+     * @type {Array}
+     * @private
+     */
+    this._confirmedTransactions = [];
 };
 
 WsBitcoinService.prototype.stop = function(){
@@ -229,14 +243,151 @@ WsBitcoinService.prototype.listAvailableActions = function(socket, args){
 WsBitcoinService.prototype.subscribeToNewTransaction = function(socket, args){
 
     //var action = args[0];
-    var account = args[1]
+    var accountName = args[1]
 
-    if(typeof account != "string")
+    if(typeof accountName != "string")
     {
         throw new Error("Invalid argument count");
     }
 
-    socket.join("newTransactionSubscribers");
+    /**
+     * Join a room specific to this this account to receive
+     * notifications when a new transaction occurs
+     */
+    console.log("debug: client " + socket.id + " join the new transaction subscription: newTx" + accountName);
+    socket.join("newTx" + accountName);
+    this._broadcastNewTransactions("listen", []);
+};
+
+/**
+ * Indexes all previous confirmed transactions into the confirmedTransactions list. This
+ * function is usually called on startup.
+ * @param cb Callback function is called after old transactions have been finished
+ * @private
+ */
+WsBitcoinService.prototype._indexOldTransactions = function(cb)
+{
+    this._checkNewTransactions();
+};
+
+/**
+ * Starts the account watcher, which monitors new transactions
+ * @private
+ */
+WsBitcoinService.prototype._startAccountWatcher = function()
+{
+    this._checkNewTransactionsInterval = setInterval(this._checkNewTransactions.bind(this), this.options.checkInterval);
+};
+
+/**
+ * Stop the account watcher, which monitors new transactions
+ * @private
+ */
+WsBitcoinService.prototype._stopAccountWatcher = function()
+{
+    clearInterval(this._checkNewTransactionsInterval);
+};
+
+/**
+ * The account watcher setInterval callback function. Checks for new transactions periodically
+ * @private
+ */
+WsBitcoinService.prototype._checkNewTransactions = function()
+{
+    /**
+     * To get the latest transaction:
+     * 1. Check if the block we are currently working on is the latest.
+     *
+     */
+    var self = this;
+    var newTransactions = [];
+
+    self.bitcoinClient.listUnspent(self.options.bitcoinTransactionConfirmationThreshold, function(err, data){
+        if(err)
+        {
+            throw new Error(err);
+        }
+
+        var transactions = data;
+        var j = 0;
+
+        function checkFinished(count)
+        {
+            if(count >= transactions.length - 1)
+            {
+                onFinished();
+            }
+        }
+
+        for(var i in transactions)
+        {
+            var tx = transactions[i];
+
+            if(typeof self._confirmedTransactions[tx.txid] != "undefined")
+            {
+                /**
+                 * transaction already in index
+                 */
+                checkFinished(j++);
+                continue;
+            }
+
+            self.bitcoinClient.getTransaction(tx.txid, function(err, txDetails){
+
+                if(err)
+                {
+                    throw new Error(err);
+                }
+                else
+                {
+                    var newTxObj = {
+                        "tx": tx,
+                        "details": txDetails
+                    };
+
+                    /**
+                     * This transaction is confirmed
+                     */
+                    self._confirmedTransactions[this.tx.txid] = newTxObj;
+                    newTransactions.push(newTxObj);
+                }
+                checkFinished(j++);
+            }.bind({"tx": tx}));
+        }
+    });
+
+    function onFinished(){
+        for(var txId in newTransactions)
+        {
+            /**
+             * listunspent details about the transcation
+             */
+            var tx = newTransactions[txId];
+
+            /**
+             * getTransaction details about the transaction
+             */
+            var details = tx.details;
+            var account = details.account;
+
+            //TODO: Broadcast new transactions for account
+        }
+    };
+};
+
+WsBitcoinService.prototype._broadcastNewTransactions = function(accountName, transactions)
+{
+    if(typeof accountName != "string" || accountName.length == 0)
+    {
+        throw new Error("Invalid account");
+    }
+
+    if(Array.isArray(transactions) === false)
+        transactions = [];
+
+    this.io.sockets.in("newTx" + accountName).emit("newTransactions", {
+        "transactions": transactions
+    });
 };
 
 module.exports.WsBitcoinService = WsBitcoinService;

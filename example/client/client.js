@@ -6,20 +6,20 @@
 
 $(function(){
     var domConsole = $("#console");
-    var origConsoleContent = domConsole.val();
+    var origConsoleContent = domConsole.html();
 
     function writeLog(msg, level)
     {
         if(typeof level == "undefined")
             level = "DEBUG";
 
-        domConsole.val(domConsole.val() + level.toUpperCase() + ": " + msg + "\r\n");
+        domConsole.html(domConsole.html() + level.toLowerCase() + ": " + msg + "\r\n");
         domConsole.get(0).scrollTop = domConsole.get(0).scrollHeight;
     }
 
     function clearLog()
     {
-        domConsole.val(origConsoleContent);
+        domConsole.html(origConsoleContent);
     }
 
     function showSelectAccountDialog(callback){
@@ -154,6 +154,10 @@ $(function(){
 
         if(data.action in responseHooks)
             responseHooks[data.action](data);
+    });
+
+    socket.on("newTransactions", function(data){
+        writeLog("New Transaction: " + JSON.stringify(data.transactions))
     });
 
     /**
